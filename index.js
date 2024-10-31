@@ -25,6 +25,16 @@ const messages = {
     creator: "Rafael",
     result: "Please input parameter query!",
   },
+  amount: {
+    status: 400,
+    creator: "Rafael",
+    result: "Please input parameter amount!",
+  },
+  codeqr: {
+    status: 400,
+    creator: "Rafael",
+    result: "Please input parameter codeqr!",
+  },
   url: {
     status: 400,
     creator: "Rafael",
@@ -61,8 +71,40 @@ app.get("/api/tiktok", async (req, res) => {
   }
 });
 
+app.get("/api/orkut/createpayment", async (req, res) => {
+  const { amount, codeqr } = req.query;
+  if (!amount) return res.status(400).json({ message: "Amount is required" });
+  if (!codeqr) return res.status(400).json({ message: "CodeQR is required" });
 
-// Handle 404 error
+  try {
+    const response = await fetch(`https://api.elxyzgpt.xyz/orkut/createpayment?apikey=rafael&amount=${amount}&codeqr=${codeqr}`);
+    const gateway = await response.json();
+    if (!gateway.result) return res.status(404).json({ message: "Result not found" });
+
+    res.json({ status: true, creator: "Rafael", result: gateway.result });
+  } catch (error) {
+    console.error(error); 
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/api/orkut/cekstatus", async (req, res) => {
+  const { merchant, keyorkut } = req.query;
+  if (!merchant) return res.status(400).json({ message: "merchant is required" });
+  if (!keyorkut) return res.status(400).json({ message: "keyorkut is required" });
+
+  try {
+    const response = await fetch(`https://api.elxyzgpt.xyz/orkut/checkpayment?apikey=rafael&merchant=${merchant}&token=${keyorkut}`);
+    const data = await response.json(); // Perbaikan di sini, menambahkan await dan memperbaiki nama variabel
+
+    res.json({ status: true, creator: "Rafael", result: data }); // Mengganti `gateway.result` dengan `data.result`
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}); 
+
+
 app.use((req, res, next) => {
   res.status(404).send("Sorry can't find that!");
 });
